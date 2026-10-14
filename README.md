@@ -2,7 +2,7 @@
 
 **A user story quality checker for Agile teams, available to AI assistants through an MCP server and a Claude skill.**
 
-![tests]([https://github.com/josh-amp/story-checker/actions/workflows/tests.yml/badge.svg](https://github.com/Josh-Amp/user-story-checker/blob/main/test_story_checker.py)
+![tests]([https://github.com/josh-amp/story-checker/actions/workflows/tests.yml/badge.svg](https://github.com/Josh-Amp/user-story-checker/blob/main/test_story_checker.py))
 
 Story Checker scores user stories for sprint readiness. It checks whether each story uses the standard format, has testable Gherkin acceptance criteria, avoids vague wording, and is small enough for one sprint. You can run it as a plain Python script, or connect it to an AI assistant such as Claude Desktop so the assistant can check a whole backlog during grooming.
 

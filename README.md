@@ -1,14 +1,14 @@
-# Story Checker
+# User Story Checker
 
 **A user story quality checker for Agile teams, available to AI assistants through an MCP server and a Claude skill.**
 
-![tests]([https://github.com/josh-amp/story-checker/actions/workflows/tests.yml/badge.svg](https://github.com/Josh-Amp/user-story-checker/blob/main/test_story_checker.py))
+[![tests](https://github.com/Josh-Amp/user-story-checker/actions/workflows/tests.yml/badge.svg)](https://github.com/Josh-Amp/user-story-checker/actions/workflows/tests.yml)
 
 Story Checker scores user stories for sprint readiness. It checks whether each story uses the standard format, has testable Gherkin acceptance criteria, avoids vague wording, and is small enough for one sprint. You can run it as a plain Python script, or connect it to an AI assistant such as Claude Desktop so the assistant can check a whole backlog during grooming.
 
 ## Why I built it
 
-As a business analyst I have written 150+ Jira stories with Gherkin acceptance criteria. Most rework I saw came from stories that weren't ready: missing "so that" benefits, acceptance criteria with no Given / When / Then, and words like "fast" or "easy" that nobody can test. This project turns those review standards into code. It's also a hands-on way to learn how AI tools are built, through MCP (Model Context Protocol) and Claude skills.
+As a business analyst I have written 150+ Jira tickets, including user stories with Gherkin acceptance criteria. Most rework I saw came from stories that weren't ready: missing "so that" benefits, acceptance criteria with no Given / When / Then, and words like "fast" or "easy" that nobody can test. This project turns those review standards into code. It's also a hands-on way to learn how AI tools are built, through MCP (Model Context Protocol) and Claude skills.
 
 ## What it checks
 
@@ -48,8 +48,8 @@ More detail is in [docs/architecture.md](docs/architecture.md).
 Requires Python 3.10 or newer.
 
 ```bash
-git clone https://github.com/josh-amp/story-checker.git
-cd story-checker
+git clone https://github.com/Josh-Amp/user-story-checker.git
+cd user-story-checker
 
 # 1. Check the sample stories (no install needed)
 python3 story_checker.py sample_stories.json
@@ -97,7 +97,7 @@ Then run `python3 story_checker.py my_stories.json`.
      "mcpServers": {
        "story-checker": {
          "command": "python3",
-         "args": ["/FULL/PATH/TO/story-checker/server.py"]
+         "args": ["/FULL/PATH/TO/user-story-checker/server.py"]
        }
      }
    }
@@ -119,7 +119,7 @@ The skill in [skill/story-readiness/SKILL.md](skill/story-readiness/SKILL.md) is
 ## Project structure
 
 ```
-story-checker/
+user-story-checker/
 ├── story_checker.py            # scoring rules (no dependencies)
 ├── server.py                   # MCP server exposing the rules as tools
 ├── test_story_checker.py       # tests
@@ -149,7 +149,7 @@ story-checker/
 
 ## Compatibility
 
-Built and tested with Python 3.13 and the `mcp` package 2.2.0. In `mcp` 1.x the server class was named `FastMCP` (`from mcp.server.fastmcp import FastMCP`); in 2.x it's `MCPServer`.
+Built with Python 3.13 and the `mcp` package 2.x; the tests run on Python 3.10 and 3.13. In `mcp` 1.x the server class was named `FastMCP` (`from mcp.server.fastmcp import FastMCP`); in 2.x it's `MCPServer`.
 
 ## Credits
 

@@ -1,0 +1,2 @@
+# Only needed for the MCP server (server.py). story_checker.py has no dependencies.
+mcp>=2.0

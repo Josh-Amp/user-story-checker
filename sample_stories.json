@@ -1,0 +1,17 @@
+[
+  {
+    "id": "STORY-1",
+    "story": "As a program manager, I want to filter the AI summary dashboard by date range, so that I can review usage for a reporting period.",
+    "acceptance_criteria": "Given I am on the AI summary dashboard\nWhen I select a start and end date\nThen only summaries created in that range are shown"
+  },
+  {
+    "id": "STORY-2",
+    "story": "As an analyst, I want the search to be fast and easy, so that I save time.",
+    "acceptance_criteria": "Results should be quick."
+  },
+  {
+    "id": "STORY-3",
+    "story": "Add an export button to the report page.",
+    "acceptance_criteria": "Given I am on the report page\nWhen I click Export\nThen a CSV downloads"
+  }
+]

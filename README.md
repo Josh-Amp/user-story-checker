@@ -4,7 +4,7 @@
 
 [![tests](https://github.com/Josh-Amp/user-story-checker/actions/workflows/tests.yml/badge.svg)](https://github.com/Josh-Amp/user-story-checker/actions/workflows/tests.yml)
 
-Story Checker scores user stories for sprint readiness. It checks whether each story uses the standard format, has testable Gherkin acceptance criteria, avoids vague wording, and is small enough for one sprint. You can run it as a plain Python script, or connect it to an AI assistant such as Claude Desktop so the assistant can check a whole backlog during grooming.
+Story Checker scores user stories for sprint readiness and reviews them the way a business analyst would. It checks whether each story uses the standard format, has testable Gherkin acceptance criteria, avoids vague wording, and is small enough for one sprint. Then it writes a review: a one-line verdict, an INVEST scorecard, findings for each part of the story, and the habits the writer should work on. You can run it as a plain Python script, or connect it to an AI assistant such as Claude Desktop so the assistant can check a whole backlog during grooming.
 
 ## Why I built it
 
@@ -19,7 +19,32 @@ As a business analyst I have written 150+ Jira tickets, including user stories w
 | No vague, untestable words (fast, easy, intuitive, etc.) | 20 | Vague words can't be verified in QA |
 | Story is 60 words or fewer | 10 | Long stories usually hide more than one story |
 
-A story is **Ready** when it scores 80 or more **and** its acceptance criteria include all of Given, When and Then. See [docs/scoring.md](docs/scoring.md) for the full rules.
+A story is **Ready** when it scores 80 or more, its acceptance criteria include all of Given, When and Then, **and** none of its INVEST checks fail. See [docs/scoring.md](docs/scoring.md) for the full rules.
+
+## The review
+
+The score says whether a story is well-formed. The review says what to fix and why, in the same order every time:
+
+| Section | What it gives you |
+|---|---|
+| Verdict | One sentence up front: ready or not, and the main reasons |
+| The story as submitted | The story and its acceptance criteria, quoted |
+| Scorecard | The six INVEST checks (Independent, Negotiable, Valuable, Estimable, Small, Testable), each **pass**, **fail** or **unclear** with a one-line reason |
+| Part by part | Findings for the role, the want, the benefit and the acceptance criteria |
+| Going forward | The habits this story showed it needs, from a 10-point checklist |
+
+Part by part, the checker looks for:
+
+| Part | Flags |
+|---|---|
+| Role | Generic roles such as "a user" or "a visitor" |
+| Want | Implementation terms (API, database, component); vague goals with no finish line (cleaned up, streamlined, improved); "and" joining two wants |
+| Benefit | A "so that" that repeats the want instead of naming the value |
+| Acceptance criteria | Missing Given / When / Then; vague words; implementation terms a tester can't observe; "only" or "all" hiding a removal; a single happy-path scenario; more than six scenarios |
+
+Findings are either **problems**, which stop a story being Ready, or **advice**, which is worth a look but doesn't block it.
+
+The Claude skill adds what a pattern check can't: a rewrite with full acceptance criteria, notes for the conversation and open questions for the Product Lead. See [Using the Claude skill](#using-the-claude-skill).
 
 ## How it fits together
 
@@ -31,15 +56,15 @@ A story is **Ready** when it scores 80 or more **and** its acceptance criteria i
         │
         │  calls tools over MCP (stdin/stdout)
         ▼
- server.py  (MCP server: check_story, check_backlog)
+ server.py  (MCP server: check_story, check_backlog, review_story)
         │
         ▼
  story_checker.py  (the scoring rules, plain Python)
 ```
 
-- **`story_checker.py`** holds the rules. It has no dependencies and runs on its own.
-- **`server.py`** wraps those rules as two MCP tools so any MCP-compatible AI app can call them.
-- **`SKILL.md`** tells Claude *how* to run a readiness review: collect stories, call the tools, report a table, suggest rewrites, and list open questions for the Product Lead.
+- **`story_checker.py`** holds the rules and writes the review. It has no dependencies and runs on its own.
+- **`server.py`** wraps those rules as three MCP tools so any MCP-compatible AI app can call them.
+- **`SKILL.md`** tells Claude *how* to run a readiness review: collect stories, call the tools, look at the real product, and write the review in the format above with a rewrite and open questions for the Product Lead.
 
 More detail is in [docs/architecture.md](docs/architecture.md).
 
@@ -54,21 +79,57 @@ cd user-story-checker
 # 1. Check the sample stories (no install needed)
 python3 story_checker.py sample_stories.json
 
-# 2. Run the tests
+# 2. Write a full review of each story
+python3 story_checker.py sample_stories.json --markdown
+
+# 3. Run the tests
 python3 test_story_checker.py
 ```
 
-Example output:
+Example output (trimmed to two stories):
 
 ```
-1 of 3 stories ready | average score 70.0
+1 of 4 stories ready | average score 72.5
 
 [STORY-1] score 100 READY
-[STORY-2] score 50 NEEDS WORK
-   - Acceptance criteria missing: Given, When, Then
-   - Vague, hard-to-test wording: fast, quick, easy
-[STORY-3] score 60 NEEDS WORK
-   - Story is not in "As a <role>, I want <goal>, so that <benefit>" format
+   Ready for sprint planning. Worth a look first: "only" may hide scope and only the happy path is covered.
+   INVEST: Independent pass · Negotiable pass · Valuable pass · Estimable pass · Small pass · Testable pass
+[STORY-4] score 80 NEEDS WORK
+   Not ready yet: the want uses vague words (cleaned up, streamlined), the role is generic and the want may be two stories.
+   INVEST: Independent pass · Negotiable pass · Valuable unclear · Estimable unclear · Small unclear · Testable fail
+   - Vague, hard-to-test wording: cleaned up, streamlined
+```
+
+STORY-4 scores 80 but still isn't Ready, because its Testable check fails. With `--markdown`, the same story gets a full review:
+
+```markdown
+# Story review: STORY-4
+
+Not ready yet: the want uses vague words (cleaned up, streamlined), the role is generic and the want may be two stories.
+
+## Scorecard
+
+It passes 2 of the six INVEST checks.
+
+| Check | Result | Why |
+| --- | --- | --- |
+| Valuable | Unclear | The role is generic, so it's hard to say who gains what. |
+| Testable | Fail | "cleaned up" and "streamlined" have no pass or fail. |
+...
+
+## Part by part
+
+**Role: "user of the portfolio website."** It doesn't say who this is for. ...
+
+**Acceptance criteria.**
+
+- **Criteria describe implementation.** "api" is plumbing a tester can't see. ...
+- **"only" may hide scope.** "only" sets scope by leaving things out. If something is removed, name it.
+- **Only the happy path is covered.** There's one scenario. Add one for failure, empty data or permissions.
+
+## Going forward
+
+1. Name a specific role, never "user". ...
 ```
 
 ## Checking your own stories
@@ -85,7 +146,7 @@ Create a JSON file in the same shape as [sample_stories.json](sample_stories.jso
 ]
 ```
 
-Then run `python3 story_checker.py my_stories.json`.
+Then run `python3 story_checker.py my_stories.json`, or add `--markdown` for full reviews. Each `Given` (or `Scenario:` line) in the acceptance criteria counts as one scenario.
 
 ## Using it with Claude Desktop (MCP)
 
@@ -103,24 +164,38 @@ Then run `python3 story_checker.py my_stories.json`.
    }
    ```
 
-3. Restart Claude Desktop. Paste a story and ask: *"Check this story with story-checker."*
+3. Restart Claude Desktop. Paste a story and ask: *"Check this story with story-checker."* or *"Review this story."*
 
 ### Tools the server provides
 
 | Tool | Input | Returns |
 |---|---|---|
-| `check_story` | `story` (text), `acceptance_criteria` (text, optional) | `score`, `ready`, `passes`, `problems` |
-| `check_backlog` | `stories`: list of `{id, story, acceptance_criteria}` | `total`, `ready`, `average_score`, per-story `results` |
+| `check_story` | `story` (text), `acceptance_criteria` (text, optional) | `score`, `ready`, `verdict`, `passes`, `problems`, `invest`, `parts`, `tips` |
+| `check_backlog` | `stories`: list of `{id, story, acceptance_criteria}` | `total`, `ready`, `average_score`, per-story `results` (each shaped like `check_story`) |
+| `review_story` | `story`, `acceptance_criteria` (optional), `story_id` (optional) | The full review as Markdown |
+
+`invest` is a list of `{check, result, why}`. `parts` has `role`, `want`, `benefit` and `acceptance_criteria`, each with the `text` found and a list of `findings` (`severity`, `label`, `detail`, `tip`). `tips` is the going-forward checklist for that story.
 
 ## Using the Claude skill
 
-The skill in [skill/story-readiness/SKILL.md](skill/story-readiness/SKILL.md) is a step-by-step review procedure. To add it, upload the `story-readiness` folder as a custom skill in Claude (see Claude's help center for current steps). The skill works without the MCP server by applying the same checks by hand, and it uses the server's tools when they're connected.
+The skill in [skill/story-readiness/SKILL.md](skill/story-readiness/SKILL.md) is a step-by-step review procedure. It has Claude write every review in the same format as the tool, then add the parts that need judgment:
+
+1. **Verdict**, the answer first
+2. **The story as submitted**
+3. **Scorecard** of the INVEST checks, confirming or overruling the tool's pattern-based results
+4. **Part by part** findings for the role, want, benefit and acceptance criteria, grounded in the real product when Claude can see it
+5. **A rewrite** with numbered Given / When / Then criteria, including an unhappy path and knock-on changes
+6. **Notes for the conversation**
+7. **Going forward** checklist
+8. **Open questions** for the Product Lead
+
+To add it, upload the `story-readiness` folder as a custom skill in Claude (see Claude's help center for current steps). The skill works without the MCP server by applying the same checks by hand, and it uses the server's tools when they're connected.
 
 ## Project structure
 
 ```
 user-story-checker/
-├── story_checker.py            # scoring rules (no dependencies)
+├── story_checker.py            # scoring rules and review (no dependencies)
 ├── server.py                   # MCP server exposing the rules as tools
 ├── test_story_checker.py       # tests
 ├── sample_stories.json         # example input
@@ -138,14 +213,17 @@ user-story-checker/
 ## Limitations
 
 - The checks are pattern-based. They confirm a story is *well-formed*, not that it's the *right* story. That judgment still belongs to the team and the Product Lead.
-- The vague-word list is a starting set and will flag some legitimate uses (for example "quick filter" as a feature name).
+- INVEST results are heuristics. "Unclear" means a person should look, and a "pass" on Independent only means no dependency was mentioned. The skill asks Claude to confirm or overrule each one.
+- "The benefit repeats the want" compares words, so it catches "export reports so that I can export reports" but not a benefit that restates the want in different words.
+- The vague-word list is a starting set and will flag some legitimate uses (for example "quick filter" as a feature name, or "only" in "only matching records are shown").
 - Format matching expects English and the standard "As a / I want / so that" wording.
 
 ## Roadmap
 
 - [ ] Flag acceptance criteria with no measurable value (a number, a limit, a time)
 - [ ] Read stories from a Jira CSV export
-- [ ] Add INVEST checks (Independent, Negotiable, Valuable, Estimable, Small, Testable)
+- [x] Add INVEST checks (Independent, Negotiable, Valuable, Estimable, Small, Testable)
+- [ ] Flag knock-on effects (navigation, headings, copy) when a story removes something
 
 ## Compatibility
 

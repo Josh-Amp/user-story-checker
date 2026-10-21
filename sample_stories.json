@@ -13,5 +13,10 @@
     "id": "STORY-3",
     "story": "Add an export button to the report page.",
     "acceptance_criteria": "Given I am on the report page\nWhen I click Export\nThen a CSV downloads"
+  },
+  {
+    "id": "STORY-4",
+    "story": "As a user of the portfolio website, I want the Goals section to be cleaned up and streamlined so I can focus on the trailhead progress.",
+    "acceptance_criteria": "Given I am on the portfolio website\nWhen I navigate to the goals section\nThen I should only see the live trailhead api"
   }
 ]

@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.2.0 (2026-10-21)
+
+Stories now get a full review, not just a score.
+
+- Every result has a one-line `verdict`, an INVEST scorecard (`invest`), findings for the role, want, benefit and acceptance criteria (`parts`), and a going-forward checklist (`tips`)
+- New findings: generic roles, implementation terms in the want or criteria, a benefit that repeats the want, scope words such as "only", a single happy-path scenario, and too many scenarios
+- Vague goal words in the want and criteria: cleaned up, streamlined, improved, better, enhanced, optimized, seamless, modernized
+- A story is Ready only if no INVEST check fails, as well as scoring 80+ with Given / When / Then
+- "So I can", "so we can", "in order to" and "I need" are accepted in the story format
+- `--markdown` on the command line, and a new `review_story` MCP tool, write the review as Markdown
+- The `story-readiness` skill writes reviews in the same format, adding a rewrite, notes for the conversation and open questions
+- New sample story (STORY-4) and eight new tests
+
 ## 0.1.0 (2026-10-14)
 
 First release.

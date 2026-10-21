@@ -1,5 +1,8 @@
 """Tests for the story checker. Run: python -m pytest  (or python test_story_checker.py)"""
 
+import zipfile
+from pathlib import Path
+
 from story_checker import check_backlog, check_story, review_markdown
 
 GOOD_STORY = "As a reviewer, I want to see flagged records, so that I can fix data errors."
@@ -103,6 +106,14 @@ def test_markdown_review_sections():
     for heading in ("# Story review: STORY-4", "## Scorecard", "## Part by part", "## Going forward"):
         assert heading in md
     assert "| Testable | Fail |" in md
+
+
+def test_skill_zip_matches_skill_folder():
+    root = Path(__file__).parent
+    with zipfile.ZipFile(root / "story-readiness.zip") as z:
+        zipped = z.read("story-readiness/SKILL.md")
+    assert zipped == (root / "skill" / "story-readiness" / "SKILL.md").read_bytes(), \
+        "story-readiness.zip is out of date; rebuild it from the skill folder"
 
 
 if __name__ == "__main__":

@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.1 (2026-10-21)
+
+- "Start here" guide in the README for people who don't code: add the skill to Claude, or copy and paste the instructions into any AI chat
+- `story-readiness.zip`, the skill ready to upload to Claude, with a test that fails if it drifts from `skill/story-readiness/SKILL.md`
+
 ## 0.2.0 (2026-10-21)
 
 Stories now get a full review, not just a score.

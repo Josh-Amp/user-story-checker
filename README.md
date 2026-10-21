@@ -6,6 +6,40 @@
 
 Story Checker scores user stories for sprint readiness and reviews them the way a business analyst would. It checks whether each story uses the standard format, has testable Gherkin acceptance criteria, avoids vague wording, and is small enough for one sprint. Then it writes a review: a one-line verdict, an INVEST scorecard, findings for each part of the story, and the habits the writer should work on. You can run it as a plain Python script, or connect it to an AI assistant such as Claude Desktop so the assistant can check a whole backlog during grooming.
 
+## Start here (no coding needed)
+
+You don't need to install anything or know GitHub to use this. Pick whichever option suits you.
+
+### Option 1: Add it to Claude as a skill (recommended)
+
+A skill is a set of instructions Claude keeps and uses whenever it's relevant. Once it's added, you just paste a story and ask for a review.
+
+1. **Download the skill.** Click [story-readiness.zip](https://github.com/Josh-Amp/user-story-checker/raw/main/story-readiness.zip). The file saves to your Downloads folder. Don't unzip it. (If your browser unzipped it into a folder anyway, right-click that folder and choose **Compress** on a Mac or **Send to > Compressed (zipped) folder** on Windows.)
+2. **Open Claude's settings.** Go to [claude.ai](https://claude.ai), sign in, click your name or initials in the bottom-left corner, then click **Settings**.
+3. **Upload the skill.** Open **Capabilities**, find the **Skills** section, click **Upload skill**, and choose `story-readiness.zip`. If you don't see Skills, turn on **Code execution and file creation** on the same page first.
+4. **Make sure it's on.** `story-readiness` should now appear in your list of skills with its switch turned on.
+5. **Use it.** Start a new chat and type something like:
+
+   > Review this user story:
+   > As a hiring manager, I want to see Joshua's Salesforce progress, so that I can judge his skills.
+   > Given his profile is public, when I open the page, then I see his rank and badges.
+
+Claude replies with a verdict, a scorecard, what to fix in each part of the story, a rewrite, and tips for next time. You can paste one story or a whole list.
+
+Menus in Claude change from time to time. If a step doesn't match what you see, search "skills" in [Claude's help center](https://support.claude.com).
+
+### Option 2: Copy and paste (works in any AI chat)
+
+1. Open [the review instructions](skill/story-readiness/SKILL.md) and click the **Copy raw file** button (two overlapping squares, top right of the file).
+2. Paste them into a new chat in Claude, ChatGPT or Copilot.
+3. Underneath, type "Review this user story:" and paste your story.
+
+You'll need to paste the instructions again in each new chat. Option 1 saves you that step.
+
+### Option 3: For developers
+
+Run the checker in a terminal, or connect it to Claude Desktop as an MCP server. See [Quick start](#quick-start) below.
+
 ## Why I built it
 
 As a business analyst I have written 150+ Jira tickets, including user stories with Gherkin acceptance criteria. Most rework I saw came from stories that weren't ready: missing "so that" benefits, acceptance criteria with no Given / When / Then, and words like "fast" or "easy" that nobody can test. This project turns those review standards into code. It's also a hands-on way to learn how AI tools are built, through MCP (Model Context Protocol) and Claude skills.
@@ -189,7 +223,7 @@ The skill in [skill/story-readiness/SKILL.md](skill/story-readiness/SKILL.md) is
 7. **Going forward** checklist
 8. **Open questions** for the Product Lead
 
-To add it, upload the `story-readiness` folder as a custom skill in Claude (see Claude's help center for current steps). The skill works without the MCP server by applying the same checks by hand, and it uses the server's tools when they're connected.
+To add it, follow [Start here](#start-here-no-coding-needed). If you change `SKILL.md`, rebuild the zip from the `skill` folder with `zip -X -r ../story-readiness.zip story-readiness`; a test fails if the two drift apart. The skill works without the MCP server by applying the same checks by hand, and it uses the server's tools when they're connected.
 
 ## Project structure
 
@@ -200,6 +234,7 @@ user-story-checker/
 ├── test_story_checker.py       # tests
 ├── sample_stories.json         # example input
 ├── requirements.txt            # mcp package
+├── story-readiness.zip         # the skill, zipped for upload to Claude
 ├── skill/story-readiness/
 │   └── SKILL.md                # Claude skill: review procedure
 ├── docs/
